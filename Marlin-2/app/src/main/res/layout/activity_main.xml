@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <org.osmdroid.views.MapView
+            android:id="@+id/map"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" >
+
+        </org.osmdroid.views.MapView>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/button_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            app:backgroundTint="#FFFFFF"
+            app:layout_constraintEnd_toEndOf="@+id/map"
+            app:layout_constraintTop_toBottomOf="@+id/horizontalScrollViewSensors"
+            app:srcCompat="@drawable/ic_search" />
+
+        <HorizontalScrollView
+            android:id="@+id/horizontalScrollViewButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/alphaFull"
+            android:scrollbars="none"
+            app:layout_constraintBottom_toBottomOf="@+id/map">
+
+            <LinearLayout
+                android:id="@+id/buttonsContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" >
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/button_reset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:backgroundTint="#FFFFFF"
+                    android:layout_margin="6dp"
+                    app:srcCompat="@drawable/ic_trash" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/button_send"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:backgroundTint="#FFFFFF"
+                    android:layout_margin="6dp"
+                    app:srcCompat="@drawable/ic_play_color" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/button_draw"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:backgroundTint="#FFFFFF"
+                    android:layout_margin="6dp"
+                    app:srcCompat="@drawable/ic_map_1" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/button_spiral"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:backgroundTint="#FFFFFF"
+                    android:layout_margin="6dp"
+                    app:srcCompat="@drawable/ic_map_3" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/button_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:backgroundTint="#FFFFFF"
+                    android:layout_margin="6dp"
+                    app:srcCompat="@drawable/ic_speed" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/button_temp_0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:backgroundTint="#FFFFFF"
+                    android:layout_margin="6dp"
+                    app:srcCompat="@drawable/ic_wip" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/button_temp_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:backgroundTint="#FFFFFF"
+                    android:layout_margin="6dp"
+                    app:srcCompat="@drawable/ic_wip" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/textView_miniLog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/minilog_style"
+            android:padding="8dp"
+            android:textAlignment="textStart"
+            app:layout_constraintStart_toStartOf="@+id/map"
+            app:layout_constraintTop_toBottomOf="@+id/horizontalScrollViewSensors" />
+
+        <HorizontalScrollView
+            android:id="@+id/horizontalScrollViewSensors"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@color/alphaWhite"
+            android:scrollbars="none"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:id="@+id/sensorTxtContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView_1"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_2"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_3"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_4"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_5"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_6"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_7"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_8"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_9"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_10"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_11"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_12"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_13"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/sensor_style"
+                    android:gravity="center"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.v4.widget.DrawerLayout>
