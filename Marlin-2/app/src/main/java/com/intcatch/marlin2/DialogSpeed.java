@@ -3,6 +3,7 @@ package com.intcatch.marlin2;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.text.LoginFilter;
 import android.util.Log;
@@ -22,6 +23,7 @@ public class DialogSpeed extends DialogFragment {
     public static int selectedSpeed = 50;
     public static Socket mSocket;
 
+    @NonNull
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = Objects.requireNonNull(getActivity()).getLayoutInflater();
@@ -46,7 +48,9 @@ public class DialogSpeed extends DialogFragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 // TODO: send the speed!
+                JSONObject toSend = createSpeedJSON();
                 Log.d("SocketTest", "Sending speed");
+                mSocket.emit("set_speed", toSend);
             }
         });
 

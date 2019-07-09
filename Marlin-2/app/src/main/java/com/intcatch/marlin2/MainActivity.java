@@ -85,9 +85,12 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton sendButton;
     private FloatingActionButton speedButton;
     private FloatingActionButton searchButton;
-    private FloatingActionButton tempButton_0;
+    private FloatingActionButton peristalticButton;
+    private FloatingActionButton plusSpiralButton;
+    private FloatingActionButton minusSpiralButton;
     private FloatingActionButton tempButton_1;
     private TextView miniLogView;
+    private TextView pumpLogView;
     private ArrayList<TextView> sensorsTextViewList;
 
     // Points List
@@ -95,8 +98,13 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Polyline> polyLineArrayList;
     private ArrayList<GeoPoint> geoPointsArrayList;
 
-    public static final String SERVER_URL = "http://192.168.2.1:5000";
+    // Socket variables
+    public static final String SERVER_URL = "http://157.27.206.102:5000";
     private Socket mSocket;
+
+    // My private variables
+    private boolean runningPathFlag;
+    private int spiralPathSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+
+        runningPathFlag = true;
+        spiralPathSize = 3;
 
         setUpConnection();
         setUpPermissions();
@@ -142,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     private void setUpViews() {
         // Find views
         drawButton = findViewById(R.id.button_draw);
@@ -151,17 +163,23 @@ public class MainActivity extends AppCompatActivity {
         speedButton = findViewById(R.id.button_speed);
         searchButton = findViewById(R.id.button_search);
         miniLogView = findViewById(R.id.textView_miniLog);
-        tempButton_0 = findViewById(R.id.button_temp_0);
+        pumpLogView = findViewById(R.id.textView_pumpLog);
+        peristalticButton = findViewById(R.id.button_peristaltic);
         tempButton_1 = findViewById(R.id.button_temp_1);
+        plusSpiralButton = findViewById(R.id.button_plus_spiral);
+        minusSpiralButton = findViewById(R.id.button_minus_spiral);
 
         // Set invisible views
         miniLogView.setVisibility(View.GONE);
+        pumpLogView.setVisibility(View.GONE);
+        plusSpiralButton.setVisibility(View.GONE);
+        minusSpiralButton.setVisibility(View.GONE);
 
         enableSendButton(false);
 
         // Disable WIP buttons
-        tempButton_0.setClickable(false);
-        tempButton_0.setAlpha(0.3f);
+        //peristalticButton.setClickable(false);
+        //peristalticButton.setAlpha(0.3f);
         tempButton_1.setClickable(false);
         tempButton_1.setAlpha(0.3f);
     }
@@ -222,6 +240,25 @@ public class MainActivity extends AppCompatActivity {
         sensorsTextViewList.get(0).setTextColor(Color.RED);
     }
 
+    private void resumeAutonomyState() {
+        decoder.decodeAutonomyCurrentPath();
+        runningPathFlag=false;
+        ArrayList<GeoPoint> geoPoints = decoder.getPathPointList();
+
+        Log.d("SocketTest", "a) " + geoPoints.size());
+
+        if(geoPoints.size() > 0) {
+
+            enableSendButton(false);
+
+            for (GeoPoint p : geoPoints) {
+                addMarker(p);
+            }
+            drawLinesStandard();
+
+        }
+    }
+
     ////////////////////////
     ///// BASIC ACTION /////
     ////////////////////////
@@ -260,6 +297,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void peristalticPanel() {
+        if(!mSocket.connected()) {
+            Toast.makeText(getApplicationContext(), "No boat connection", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        DialogPeristaltic dialogPeristaltic = new DialogPeristaltic();
+        DialogPeristaltic.mSocket = mSocket;
+        dialogPeristaltic.show(getSupportFragmentManager(), "DialogPeristaltic");
+    }
+
     private void addMarker(GeoPoint point) {
 
         Marker newMarker = new Marker(mapView);
@@ -289,6 +337,7 @@ public class MainActivity extends AppCompatActivity {
         enableSendButton(true);
     }
 
+    @SuppressLint("RestrictedApi")
     private void drawLinesSpiral() {
         if(markerArrayList.size() < 3) {
             Toast.makeText(getApplicationContext(), "3 points needed", Toast.LENGTH_LONG).show();
@@ -301,10 +350,12 @@ public class MainActivity extends AppCompatActivity {
         }
         PathPlanner planner = new PathPlanner();
         planner.setPoints(geoPointsArrayList);
-        geoPointsArrayList = planner.getSpiralPath(3);
+        geoPointsArrayList = planner.getSpiralPath(spiralPathSize);
         drawLineFromPoints();
 
         enableSendButton(true);
+        plusSpiralButton.setVisibility(View.VISIBLE);
+        minusSpiralButton.setVisibility(View.VISIBLE);
     }
 
     private void drawLineFromPoints() {
@@ -325,6 +376,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.invalidate();
     }
 
+    @SuppressLint("RestrictedApi")
     private void resetMarkerLines() {
         mSocket.emit("stop_autonomy");
 
@@ -337,6 +389,10 @@ public class MainActivity extends AppCompatActivity {
         geoPointsArrayList.clear();
 
         mapView.invalidate();
+
+        enableSendButton(false);
+        plusSpiralButton.setVisibility(View.GONE);
+        minusSpiralButton.setVisibility(View.GONE);
     }
 
     private void setReachedPoints() {
@@ -362,6 +418,42 @@ public class MainActivity extends AppCompatActivity {
             spiralButton.setClickable(true);
             spiralButton.setAlpha(1.0f);
         }
+    }
+
+    private void plusSpiral() {
+        spiralPathSize += 1;
+
+        for (Polyline p : polyLineArrayList) mapView.getOverlayManager().remove(p);
+        polyLineArrayList.clear();
+        geoPointsArrayList.clear();
+        mapView.invalidate();
+
+        for (int i = 0; i < markerArrayList.size(); i++) {
+            GeoPoint point = new GeoPoint(markerArrayList.get(i).getPosition());
+            geoPointsArrayList.add(point);
+        }
+        PathPlanner planner = new PathPlanner();
+        planner.setPoints(geoPointsArrayList);
+        geoPointsArrayList = planner.getSpiralPath(spiralPathSize);
+        drawLineFromPoints();
+    }
+
+    private void minusSpiral() {
+        if(spiralPathSize > 1) spiralPathSize -= 1;
+
+        for (Polyline p : polyLineArrayList) mapView.getOverlayManager().remove(p);
+        polyLineArrayList.clear();
+        geoPointsArrayList.clear();
+        mapView.invalidate();
+
+        for (int i = 0; i < markerArrayList.size(); i++) {
+            GeoPoint point = new GeoPoint(markerArrayList.get(i).getPosition());
+            geoPointsArrayList.add(point);
+        }
+        PathPlanner planner = new PathPlanner();
+        planner.setPoints(geoPointsArrayList);
+        geoPointsArrayList = planner.getSpiralPath(spiralPathSize);
+        drawLineFromPoints();
     }
 
     ////////////////////////
@@ -420,6 +512,32 @@ public class MainActivity extends AppCompatActivity {
             miniLog += String.format("Driving Mode: %s", modeStr);
 
             miniLogView.setText(miniLog);
+            miniLogView.setTextColor(Color.rgb(0, 0, 0));
+
+            miniLogView.setVisibility(View.VISIBLE);
+        } else {
+            miniLogView.setVisibility(View.GONE);
+        }
+    }
+
+    // TODO: bind with state update
+    @SuppressLint("DefaultLocale")
+    private void updatePumpLog() {
+        if (mSocket.connected() && decoder.getPumpOn()) {
+
+            int pumpSpeed = decoder.getPumpSpeed();
+            int pumpTime = decoder.getPumpTime();
+
+            String pumpLog = "";
+            pumpLog += ("Pump ON\n");
+            pumpLog += String.format("Pump Speed: %d \n", pumpSpeed);
+
+            int pumpTimeMinutes = (pumpTime % 3600) / 60;
+            int pumpTimeSeconds = pumpTime % 60;
+
+            pumpLog += String.format("Remaining time: %02dm%02ds", pumpTimeMinutes, pumpTimeSeconds);
+
+            pumpLogView.setText(pumpLog);
             miniLogView.setTextColor(Color.rgb(0, 0, 0));
 
             miniLogView.setVisibility(View.VISIBLE);
@@ -519,6 +637,24 @@ public class MainActivity extends AppCompatActivity {
                 centerOnBoat();
             }
         });
+        peristalticButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                peristalticPanel();
+            }
+        });
+        plusSpiralButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                plusSpiral();
+            }
+        });
+        minusSpiralButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                minusSpiral();
+            }
+        });
     }
 
     ////////////////////////
@@ -553,10 +689,12 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     decoder.setFullJSON((JSONObject) args[0]);
-                    decoder.decode();
+                    decoder.decodeState();
                     updateSensorViews();
                     updateMiniLog();
+                    updatePumpLog();
                     moveBoat();
+                    if(runningPathFlag) { resumeAutonomyState(); }
 
                 }
             });
@@ -573,6 +711,7 @@ public class MainActivity extends AppCompatActivity {
                     sensorsTextViewList.get(0).setTextColor(Color.RED);
                     updateSensorViews();
                     updateMiniLog();
+                    updatePumpLog();
                     setReachedPoints();
                 }
             });

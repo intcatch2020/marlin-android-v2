@@ -33,6 +33,52 @@
             app:layout_constraintTop_toBottomOf="@+id/horizontalScrollViewSensors"
             app:srcCompat="@drawable/ic_search" />
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/button_plus_spiral"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:backgroundTint="#FFFFFF"
+            app:layout_constraintBottom_toTopOf="@+id/button_minus_spiral"
+            app:layout_constraintEnd_toEndOf="@+id/map"
+            app:srcCompat="@drawable/ic_plus" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/button_minus_spiral"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:backgroundTint="#FFFFFF"
+            app:layout_constraintBottom_toTopOf="@+id/horizontalScrollViewButtons"
+            app:layout_constraintEnd_toEndOf="@+id/map"
+            app:srcCompat="@drawable/ic_minus" />
+
+        <TextView
+            android:id="@+id/textView_miniLog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/minilog_style"
+            android:padding="8dp"
+            android:textAlignment="textStart"
+            app:layout_constraintStart_toStartOf="@+id/map"
+            app:layout_constraintTop_toBottomOf="@+id/horizontalScrollViewSensors" />
+
+        <TextView
+            android:id="@+id/textView_pumpLog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/minilog_style"
+            android:padding="8dp"
+            android:textAlignment="textStart"
+            app:layout_constraintStart_toStartOf="@+id/map"
+            app:layout_constraintTop_toBottomOf="@+id/textView_miniLog" />
+
         <HorizontalScrollView
             android:id="@+id/horizontalScrollViewButtons"
             android:layout_width="match_parent"
@@ -88,12 +134,12 @@
                     app:srcCompat="@drawable/ic_speed" />
 
                 <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/button_temp_0"
+                    android:id="@+id/button_peristaltic"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:backgroundTint="#FFFFFF"
                     android:layout_margin="6dp"
-                    app:srcCompat="@drawable/ic_wip" />
+                    app:srcCompat="@drawable/ic_pump" />
 
                 <android.support.design.widget.FloatingActionButton
                     android:id="@+id/button_temp_1"
@@ -106,18 +152,6 @@
             </LinearLayout>
 
         </HorizontalScrollView>
-
-        <TextView
-            android:id="@+id/textView_miniLog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/minilog_style"
-            android:padding="8dp"
-            android:textAlignment="textStart"
-            app:layout_constraintStart_toStartOf="@+id/map"
-            app:layout_constraintTop_toBottomOf="@+id/horizontalScrollViewSensors" />
 
         <HorizontalScrollView
             android:id="@+id/horizontalScrollViewSensors"

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Marlin-v2</string>
+
+    <string-array name="peristaltic_mode">
+        <item>Standard</item>
+        <item>Fill</item>
+        <item>Continuous</item>
+    </string-array>
 </resources>
