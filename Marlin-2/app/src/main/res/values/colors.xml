@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
 
-    <color name="alphaBlack">#33000000</color>
+    <color name="alphaBlack">#0D000000</color>
 
     <color name="sensorBgColor">#F1F1F1</color>
     <color name="alphaWhite">#FFFFFF</color>

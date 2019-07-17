@@ -47,8 +47,7 @@ public class DialogSpeed extends DialogFragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                // TODO: send the speed!
-                JSONObject toSend = createSpeedJSON();
+                String toSend = createSpeedJSON();
                 Log.d("SocketTest", "Sending speed");
                 mSocket.emit("set_speed", toSend);
             }
@@ -58,7 +57,7 @@ public class DialogSpeed extends DialogFragment {
         return builder.create();
     }
 
-    private static JSONObject createSpeedJSON(){
+    private static String createSpeedJSON(){
         JSONObject mainObject = new JSONObject();
 
         try {
@@ -67,6 +66,6 @@ public class DialogSpeed extends DialogFragment {
             e.printStackTrace();
         }
 
-        return mainObject;
+        return mainObject.toString();
     }
 }

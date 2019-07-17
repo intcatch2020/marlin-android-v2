@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<GeoPoint> geoPointsArrayList;
 
     // Socket variables
-    public static final String SERVER_URL = "http://157.27.206.102:5000";
+    public static final String SERVER_URL = "http://192.168.2.1:5000";
     private Socket mSocket;
 
     // My private variables
@@ -263,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
     ///// BASIC ACTION /////
     ////////////////////////
 
+    @SuppressLint("RestrictedApi")
     private void sendPath() {
         if (!mSocket.connected()) {
             Toast.makeText(getApplicationContext(), "No boat connection", Toast.LENGTH_LONG).show();
@@ -272,7 +273,15 @@ public class MainActivity extends AppCompatActivity {
         AutonomySetting as = new AutonomySetting(30, geoPointsArrayList);
         mSocket.emit("start_autonomy", as.toJSON());
         Toast.makeText(getApplicationContext(), "Sending Path...", Toast.LENGTH_LONG).show();
+
         enableSendButton(false);
+        plusSpiralButton.setVisibility(View.GONE);
+        minusSpiralButton.setVisibility(View.GONE);
+
+        drawButton.setClickable(false);
+        drawButton.setAlpha(0.3f);
+        spiralButton.setClickable(false);
+        spiralButton.setAlpha(0.3f);
     }
 
     private void changeSpeed() {
@@ -391,12 +400,13 @@ public class MainActivity extends AppCompatActivity {
         mapView.invalidate();
 
         enableSendButton(false);
-        plusSpiralButton.setVisibility(View.GONE);
-        minusSpiralButton.setVisibility(View.GONE);
+        //plusSpiralButton.setVisibility(View.GONE);
+        //minusSpiralButton.setVisibility(View.GONE);
     }
 
     private void setReachedPoints() {
         int n = decoder.getReachedPoint();
+        //Log.d("RechedPoint", "N: "+n);
         if(n >= polyLineArrayList.size()) return; // TODO: safe return, hopefully unreachable
         for (int i = 0; i < n; i++) polyLineArrayList.get(i).setColor(R.color.alphaBlack);
         mapView.invalidate();
@@ -538,11 +548,11 @@ public class MainActivity extends AppCompatActivity {
             pumpLog += String.format("Remaining time: %02dm%02ds", pumpTimeMinutes, pumpTimeSeconds);
 
             pumpLogView.setText(pumpLog);
-            miniLogView.setTextColor(Color.rgb(0, 0, 0));
+            pumpLogView.setTextColor(Color.rgb(0, 0, 0));
 
-            miniLogView.setVisibility(View.VISIBLE);
+            pumpLogView.setVisibility(View.VISIBLE);
         } else {
-            miniLogView.setVisibility(View.GONE);
+            pumpLogView.setVisibility(View.GONE);
         }
     }
 
@@ -695,7 +705,7 @@ public class MainActivity extends AppCompatActivity {
                     updatePumpLog();
                     moveBoat();
                     if(runningPathFlag) { resumeAutonomyState(); }
-
+                    setReachedPoints();
                 }
             });
         }
@@ -712,7 +722,6 @@ public class MainActivity extends AppCompatActivity {
                     updateSensorViews();
                     updateMiniLog();
                     updatePumpLog();
-                    setReachedPoints();
                 }
             });
         }

@@ -87,7 +87,7 @@ public class DialogPeristaltic extends DialogFragment {
                 }
 
                 // TODO: send the pump mode!
-                JSONObject toSend = createPumpJSON(isChecked, necessaryTime);
+                String toSend = createPumpJSON(isChecked, necessaryTime);
                 Log.d("SocketTest", "Sending pump stuff");
                 mSocket.emit("set_pump", toSend);
             }
@@ -97,7 +97,7 @@ public class DialogPeristaltic extends DialogFragment {
         return builder.create();
     }
 
-    private static JSONObject createPumpJSON(boolean pumpOn, double pumpTime){
+    private static String createPumpJSON(boolean pumpOn, double pumpTime){
         JSONObject mainObject = new JSONObject();
 
         try {
@@ -107,7 +107,7 @@ public class DialogPeristaltic extends DialogFragment {
             e.printStackTrace();
         }
 
-        return mainObject;
+        return mainObject.toString();
     }
 
 }
