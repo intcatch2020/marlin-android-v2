@@ -86,9 +86,9 @@ public class DialogPeristaltic extends DialogFragment {
                         necessaryTime = -1;
                 }
 
-                // TODO: send the pump mode!
+                // TODO: mai testato sulla genomica
                 String toSend = createPumpJSON(isChecked, necessaryTime);
-                Log.d("SocketTest", "Sending pump stuff");
+                Log.d("SocketTest", "Sending to pump...");
                 mSocket.emit("set_pump", toSend);
             }
         });

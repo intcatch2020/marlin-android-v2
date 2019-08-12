@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton peristalticButton;
     private FloatingActionButton plusSpiralButton;
     private FloatingActionButton minusSpiralButton;
-    private FloatingActionButton tempButton_1;
+    private FloatingActionButton goHomeButton;
     private TextView miniLogView;
     private TextView pumpLogView;
     private ArrayList<TextView> sensorsTextViewList;
@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
     // My private variables
     private boolean runningPathFlag;
+    private boolean goHomePathFlag;
     private int spiralPathSize;
 
     @Override
@@ -117,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         runningPathFlag = true;
+        goHomePathFlag = true;
         spiralPathSize = 3;
 
         setUpConnection();
@@ -165,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
         miniLogView = findViewById(R.id.textView_miniLog);
         pumpLogView = findViewById(R.id.textView_pumpLog);
         peristalticButton = findViewById(R.id.button_peristaltic);
-        tempButton_1 = findViewById(R.id.button_temp_1);
+        goHomeButton = findViewById(R.id.button_go_home);
         plusSpiralButton = findViewById(R.id.button_plus_spiral);
         minusSpiralButton = findViewById(R.id.button_minus_spiral);
 
@@ -178,10 +180,12 @@ public class MainActivity extends AppCompatActivity {
         enableSendButton(false);
 
         // Disable WIP buttons
-        //peristalticButton.setClickable(false);
-        //peristalticButton.setAlpha(0.3f);
-        tempButton_1.setClickable(false);
-        tempButton_1.setAlpha(0.3f);
+        peristalticButton.setClickable(false);
+        peristalticButton.setAlpha(0.3f);
+
+        // Disable Go Home
+        goHomeButton.setClickable(false);
+        goHomeButton.setAlpha(0.3f);
     }
 
     private void setUpMap() {
@@ -200,12 +204,10 @@ public class MainActivity extends AppCompatActivity {
         mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), mapView);
         mLocationOverlay.enableFollowLocation();
         mLocationOverlay.enableMyLocation();
+        mLocationOverlay.setDrawAccuracyEnabled(false);
+        Bitmap bInput = BitmapFactory.decodeResource(getResources(), R.drawable.ic_man);
+        mLocationOverlay.setPersonIcon(bInput);
         mapView.getOverlays().add(mLocationOverlay);
-
-        // Add compass overlay
-        //CompassOverlay mCompassOverlay = new CompassOverlay(this, new InternalCompassOrientationProvider(this), mapView);
-        //mCompassOverlay.enableCompass();
-        //mapView.getOverlays().add(mCompassOverlay);
     }
 
     private void setUpList() {
@@ -240,9 +242,12 @@ public class MainActivity extends AppCompatActivity {
         sensorsTextViewList.get(0).setTextColor(Color.RED);
     }
 
-    private void resumeAutonomyState() {
+    private void resumeAutonomyState(boolean resumeGoHome) {
         decoder.decodeAutonomyCurrentPath();
-        runningPathFlag=false;
+
+        if (resumeGoHome) goHomePathFlag = false;
+        else runningPathFlag = false;
+
         ArrayList<GeoPoint> geoPoints = decoder.getPathPointList();
 
         Log.d("SocketTest", "a) " + geoPoints.size());
@@ -254,8 +259,9 @@ public class MainActivity extends AppCompatActivity {
             for (GeoPoint p : geoPoints) {
                 addMarker(p);
             }
-            drawLinesStandard();
 
+            if(resumeGoHome) drawLinesStandard(Color.RED);
+            else drawLinesStandard(Color.BLACK);
         }
     }
 
@@ -282,6 +288,9 @@ public class MainActivity extends AppCompatActivity {
         drawButton.setAlpha(0.3f);
         spiralButton.setClickable(false);
         spiralButton.setAlpha(0.3f);
+
+        goHomeButton.setClickable(true);
+        goHomeButton.setAlpha(1f);
     }
 
     private void changeSpeed() {
@@ -290,16 +299,30 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        DialogSpeed dialogSpeed = new DialogSpeed();
-        DialogSpeed.mSocket = mSocket;
-        dialogSpeed.show(getSupportFragmentManager(), "DialogSpeed");
+        try {
+            // TODO: se connesso al server ma non alla barca legge sempre zero come autonomy speed
+            DialogSpeed dialogSpeed = new DialogSpeed();
+            DialogSpeed.selectedSpeed = decoder.getAutonomySpeed();
+            DialogSpeed.mSocket = mSocket;
+            dialogSpeed.show(getSupportFragmentManager(), "DialogSpeed");
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), "Wait for boat state... ", Toast.LENGTH_LONG).show();
+            throw new RuntimeException(e);
+        }
+
     }
 
     private void centerOnBoat() {
-        if(!mSocket.connected())
-            Toast.makeText(getApplicationContext(), "No boat connection", Toast.LENGTH_LONG).show();
-        else if (decoder.getGpsFix() == 0)
-            Toast.makeText(getApplicationContext(), "No GPS signal!", Toast.LENGTH_LONG).show();
+        if(!mSocket.connected()) {
+            Toast.makeText(getApplicationContext(), "No boat connection! Center on phone", Toast.LENGTH_LONG).show();
+            mapController.setZoom(18.0);
+            mapController.setCenter(mLocationOverlay.getMyLocation());
+        }
+        else if (decoder.getGpsFix() == 0) {
+            Toast.makeText(getApplicationContext(), "No boat GPS signal! Center on phone", Toast.LENGTH_LONG).show();
+            mapController.setZoom(18.0);
+            mapController.setCenter(mLocationOverlay.getMyLocation());
+        }
         else {
             mapController.setZoom(18.0);
             mapController.setCenter(new GeoPoint(decoder.getLatitude(), decoder.getLongitude()));
@@ -331,7 +354,7 @@ public class MainActivity extends AppCompatActivity {
         markerArrayList.add(newMarker);
     }
 
-    private void drawLinesStandard() {
+    private void drawLinesStandard(int lineColor) {
         if(markerArrayList.size() < 2) {
             Toast.makeText(getApplicationContext(), "2 points needed", Toast.LENGTH_LONG).show();
             return;
@@ -341,7 +364,7 @@ public class MainActivity extends AppCompatActivity {
             GeoPoint point = new GeoPoint(markerArrayList.get(i).getPosition());
             geoPointsArrayList.add(point);
         }
-        drawLineFromPoints();
+        drawLineFromPoints(lineColor);
 
         enableSendButton(true);
     }
@@ -360,14 +383,14 @@ public class MainActivity extends AppCompatActivity {
         PathPlanner planner = new PathPlanner();
         planner.setPoints(geoPointsArrayList);
         geoPointsArrayList = planner.getSpiralPath(spiralPathSize);
-        drawLineFromPoints();
+        drawLineFromPoints(Color.BLACK);
 
         enableSendButton(true);
         plusSpiralButton.setVisibility(View.VISIBLE);
         minusSpiralButton.setVisibility(View.VISIBLE);
     }
 
-    private void drawLineFromPoints() {
+    private void drawLineFromPoints(int lineColor) {
         for (int i = 0; i < geoPointsArrayList.size() - 1; i++) {
             List<GeoPoint> geoPoints = new ArrayList<>();
             GeoPoint pointA = geoPointsArrayList.get(i);
@@ -377,6 +400,7 @@ public class MainActivity extends AppCompatActivity {
 
             Polyline line = new Polyline();
             line.setPoints(geoPoints);
+            line.setColor(lineColor);
 
             polyLineArrayList.add(line);
             mapView.getOverlayManager().add(line);
@@ -400,15 +424,14 @@ public class MainActivity extends AppCompatActivity {
         mapView.invalidate();
 
         enableSendButton(false);
-        //plusSpiralButton.setVisibility(View.GONE);
-        //minusSpiralButton.setVisibility(View.GONE);
+        goHomeButton.setClickable(false);
+        goHomeButton.setAlpha(0.3f);
     }
 
     private void setReachedPoints() {
         int n = decoder.getReachedPoint();
-        //Log.d("RechedPoint", "N: "+n);
-        if(n >= polyLineArrayList.size()) return; // TODO: safe return, hopefully unreachable
-        for (int i = 0; i < n; i++) polyLineArrayList.get(i).setColor(R.color.alphaBlack);
+        if(n >= polyLineArrayList.size()) return; // safe return, hopefully unreachable
+        for (int i = 1; i < n; i++) polyLineArrayList.get(i-1).setColor(R.color.alphaBlack);
         mapView.invalidate();
     }
 
@@ -445,7 +468,7 @@ public class MainActivity extends AppCompatActivity {
         PathPlanner planner = new PathPlanner();
         planner.setPoints(geoPointsArrayList);
         geoPointsArrayList = planner.getSpiralPath(spiralPathSize);
-        drawLineFromPoints();
+        drawLineFromPoints(Color.BLACK);
     }
 
     private void minusSpiral() {
@@ -463,7 +486,17 @@ public class MainActivity extends AppCompatActivity {
         PathPlanner planner = new PathPlanner();
         planner.setPoints(geoPointsArrayList);
         geoPointsArrayList = planner.getSpiralPath(spiralPathSize);
-        drawLineFromPoints();
+        drawLineFromPoints(Color.BLACK);
+    }
+
+    private void callGoHome() {
+        if(!mSocket.connected()) {
+            Toast.makeText(getApplicationContext(), "No boat connection", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        //TODO: add go home
+        mSocket.emit("go_home");
     }
 
     ////////////////////////
@@ -530,7 +563,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // TODO: bind with state update
     @SuppressLint("DefaultLocale")
     private void updatePumpLog() {
         if (mSocket.connected() && decoder.getPumpOn()) {
@@ -626,7 +658,7 @@ public class MainActivity extends AppCompatActivity {
         drawButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawLinesStandard();
+                drawLinesStandard(Color.BLACK);
             }
         });
         spiralButton.setOnClickListener(new View.OnClickListener() {
@@ -663,6 +695,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 minusSpiral();
+            }
+        });
+        goHomeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callGoHome();
             }
         });
     }
@@ -704,8 +742,10 @@ public class MainActivity extends AppCompatActivity {
                     updateMiniLog();
                     updatePumpLog();
                     moveBoat();
-                    if(runningPathFlag) { resumeAutonomyState(); }
+                    if(goHomePathFlag && decoder.getDrivingMode() == 2) { resumeAutonomyState(true); }
+                    if(runningPathFlag) { resumeAutonomyState(false); }
                     setReachedPoints();
+
                 }
             });
         }

@@ -138,8 +138,7 @@ class StateDecoder {
     ////////////////////////
 
     private void decodePointList(JSONArray jsonArrayPointList) {
-        //Log.d("SocketTest", "a) " + jsonArrayPointList.toString());
-
+        pathPointList.clear();
         for (int i = 0; i < jsonArrayPointList.length(); i++) {
             try {
                 JSONObject point = jsonArrayPointList.getJSONObject(i);
@@ -150,8 +149,6 @@ class StateDecoder {
                 pathPointList.add(geoPoint);
             } catch (JSONException e) {  e.printStackTrace(); }
         }
-
-        //Log.d("SocketTest", "c) " + pathPointList.toString());
     }
 
     ////////////////////////
@@ -174,7 +171,7 @@ class StateDecoder {
         return speedGPS;
     }
 
-    public int getAutonomySpeed() {
+    int getAutonomySpeed() {
         return autonomySpeed;
     }
 
