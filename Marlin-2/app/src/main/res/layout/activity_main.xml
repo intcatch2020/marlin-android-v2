@@ -55,6 +55,18 @@
             app:layout_constraintEnd_toEndOf="@+id/map"
             app:srcCompat="@drawable/ic_minus" />
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/button_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            app:backgroundTint="#FFFFFF"
+            app:layout_constraintEnd_toEndOf="@+id/map"
+            app:layout_constraintTop_toBottomOf="@+id/button_search"
+            app:srcCompat="@drawable/ic_play_color" />
+
         <TextView
             android:id="@+id/textView_miniLog"
             android:layout_width="wrap_content"
@@ -79,6 +91,30 @@
             app:layout_constraintStart_toStartOf="@+id/map"
             app:layout_constraintTop_toBottomOf="@+id/textView_miniLog" />
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/button_go_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:backgroundTint="#FFFFFF"
+            app:layout_constraintStart_toStartOf="@+id/map"
+            app:layout_constraintTop_toBottomOf="@+id/textView_pumpLog"
+            app:srcCompat="@drawable/ic_home" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/button_reset_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:backgroundTint="#FFFFFF"
+            app:layout_constraintStart_toStartOf="@+id/map"
+            app:layout_constraintTop_toBottomOf="@+id/button_go_home"
+            app:srcCompat="@drawable/ic_wip" />
+
         <HorizontalScrollView
             android:id="@+id/horizontalScrollViewButtons"
             android:layout_width="match_parent"
@@ -102,14 +138,6 @@
                     app:srcCompat="@drawable/ic_trash" />
 
                 <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/button_send"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:backgroundTint="#FFFFFF"
-                    android:layout_margin="6dp"
-                    app:srcCompat="@drawable/ic_play_color" />
-
-                <android.support.design.widget.FloatingActionButton
                     android:id="@+id/button_draw"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -124,14 +152,6 @@
                     app:backgroundTint="#FFFFFF"
                     android:layout_margin="6dp"
                     app:srcCompat="@drawable/ic_map_3" />
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/button_go_home"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:backgroundTint="#FFFFFF"
-                    android:layout_margin="6dp"
-                    app:srcCompat="@drawable/ic_home" />
 
                 <android.support.design.widget.FloatingActionButton
                     android:id="@+id/button_speed"

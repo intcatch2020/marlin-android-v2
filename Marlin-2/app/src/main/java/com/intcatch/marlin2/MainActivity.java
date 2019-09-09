@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     MyLocationNewOverlay mLocationOverlay;
 
     Marker boatMarker;
+    Marker homeMarker;
 
     // JSON state decoder
     StateDecoder decoder = new StateDecoder();
@@ -88,7 +89,8 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton peristalticButton;
     private FloatingActionButton plusSpiralButton;
     private FloatingActionButton minusSpiralButton;
-    private FloatingActionButton goHomeButton;
+    private FloatingActionButton goHomeButton; //same button, set-home and go-home
+    private FloatingActionButton resetHomeButton;
     private TextView miniLogView;
     private TextView pumpLogView;
     private ArrayList<TextView> sensorsTextViewList;
@@ -103,8 +105,9 @@ public class MainActivity extends AppCompatActivity {
     private Socket mSocket;
 
     // My private variables
-    private boolean runningPathFlag;
-    private boolean goHomePathFlag;
+    private boolean runningPathFlag; //if true, try to resume path
+    private boolean goHomePathFlag; //if true, try to resume path
+    private boolean homeSetted; //home point setted for go-home
     private int spiralPathSize;
 
     @Override
@@ -119,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
         runningPathFlag = true;
         goHomePathFlag = true;
+        homeSetted = false;
         spiralPathSize = 3;
 
         setUpConnection();
@@ -131,7 +135,10 @@ public class MainActivity extends AppCompatActivity {
         addClickListenerOverlay();
         addButtonsListener();
 
+        setUpEnableButtons();
+
         drawBoat();
+        drawHome();
     }
 
     ////////////////////////
@@ -168,9 +175,13 @@ public class MainActivity extends AppCompatActivity {
         pumpLogView = findViewById(R.id.textView_pumpLog);
         peristalticButton = findViewById(R.id.button_peristaltic);
         goHomeButton = findViewById(R.id.button_go_home);
+        resetHomeButton = findViewById(R.id.button_reset_home);
         plusSpiralButton = findViewById(R.id.button_plus_spiral);
         minusSpiralButton = findViewById(R.id.button_minus_spiral);
+    }
 
+    @SuppressLint("RestrictedApi")
+    private void setUpEnableButtons() {
         // Set invisible views
         miniLogView.setVisibility(View.GONE);
         pumpLogView.setVisibility(View.GONE);
@@ -180,12 +191,17 @@ public class MainActivity extends AppCompatActivity {
         enableSendButton(false);
 
         // Disable WIP buttons
-        peristalticButton.setClickable(false);
-        peristalticButton.setAlpha(0.3f);
-
-        // Disable Go Home
         goHomeButton.setClickable(false);
+        goHomeButton.setActivated(false);
         goHomeButton.setAlpha(0.3f);
+        resetHomeButton.setClickable(false);
+        resetHomeButton.setActivated(false);
+        resetHomeButton.setAlpha(0.3f);
+
+        // Disable unnecessary buttons
+        peristalticButton.setClickable(false);
+        peristalticButton.setActivated(false);
+        peristalticButton.setAlpha(0.3f);
     }
 
     private void setUpMap() {
@@ -250,7 +266,27 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayList<GeoPoint> geoPoints = decoder.getPathPointList();
 
-        Log.d("SocketTest", "a) " + geoPoints.size());
+        //Log.d("SocketTest", "a) " + geoPoints.size());
+
+        if (resumeGoHome && geoPoints.size() > 0) {
+            // Go home called, reset lines and set go home
+            for (Marker m : markerArrayList) mapView.getOverlayManager().remove(m);
+            markerArrayList.clear();
+            for (Polyline p : polyLineArrayList) mapView.getOverlayManager().remove(p);
+            polyLineArrayList.clear();
+
+            geoPointsArrayList.clear();
+
+            mapView.invalidate();
+
+            for (GeoPoint p : geoPoints)  addMarker(p);
+            drawLinesStandard(Color.RED);
+            for (Marker m : markerArrayList) mapView.getOverlayManager().remove(m);
+            markerArrayList.clear();
+            Log.d("Resume-Path", "Try to resume...");
+
+            return;
+        }
 
         if(geoPoints.size() > 0) {
 
@@ -260,8 +296,7 @@ public class MainActivity extends AppCompatActivity {
                 addMarker(p);
             }
 
-            if(resumeGoHome) drawLinesStandard(Color.RED);
-            else drawLinesStandard(Color.BLACK);
+            drawLinesStandard(Color.BLACK);
         }
     }
 
@@ -288,9 +323,6 @@ public class MainActivity extends AppCompatActivity {
         drawButton.setAlpha(0.3f);
         spiralButton.setClickable(false);
         spiralButton.setAlpha(0.3f);
-
-        goHomeButton.setClickable(true);
-        goHomeButton.setAlpha(1f);
     }
 
     private void changeSpeed() {
@@ -341,7 +373,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addMarker(GeoPoint point) {
-
         Marker newMarker = new Marker(mapView);
         newMarker.setPosition(point);
         newMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -424,13 +455,12 @@ public class MainActivity extends AppCompatActivity {
         mapView.invalidate();
 
         enableSendButton(false);
-        goHomeButton.setClickable(false);
-        goHomeButton.setAlpha(0.3f);
     }
 
     private void setReachedPoints() {
         int n = decoder.getReachedPoint();
         if(n >= polyLineArrayList.size()) return; // safe return, hopefully unreachable
+        if(polyLineArrayList.get(0).getColor() == Color.RED) return; // not used in go home
         for (int i = 1; i < n; i++) polyLineArrayList.get(i-1).setColor(R.color.alphaBlack);
         mapView.invalidate();
     }
@@ -495,8 +525,44 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        //TODO: add go home
-        mSocket.emit("go_home");
+        if(!homeSetted) {
+            if (decoder.getGpsFix() == 0) {
+                Toast.makeText(getApplicationContext(), "No boat GPS signal! Can't set Home", Toast.LENGTH_LONG).show();
+            } else {
+                GeoPoint homePosition = new GeoPoint(decoder.getLatitude(), decoder.getLongitude());
+                moveHome(false);
+
+                JSONObject homeJSON = new JSONObject();
+                try {
+                    homeJSON.put("lat", homePosition.getLatitude());
+                    homeJSON.put("lng", homePosition.getLongitude());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                mSocket.emit("set_home", homeJSON.toString());
+
+                homeSetted = true;
+
+                goHomeButton.setImageResource(R.drawable.ic_arrow_revert);
+            }
+        } else {
+            mSocket.emit("go_home");
+
+            // Draw go-home path
+            goHomePathFlag = true; //try to resume path
+        }
+    }
+
+    private void resetHome() {
+        if(!mSocket.connected()) {
+            Toast.makeText(getApplicationContext(), "No boat connection", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // RESET go-home stuff
+        moveHome(true);
+        goHomeButton.setImageResource(R.drawable.ic_home);
+        homeSetted = false;
     }
 
     ////////////////////////
@@ -586,6 +652,36 @@ public class MainActivity extends AppCompatActivity {
         } else {
             pumpLogView.setVisibility(View.GONE);
         }
+    }
+
+    private void drawHome() {
+        GeoPoint homePosition = new GeoPoint(0.0, 0.0);
+
+        homeMarker = new Marker(mapView);
+        homeMarker.setPosition(homePosition);
+        homeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        homeMarker.setIcon(getResources().getDrawable(R.drawable.ic_home));
+        homeMarker.setTitle("Home");
+
+        mapView.getOverlays().add(homeMarker);
+        mapView.invalidate();
+    }
+
+    private void moveHome(boolean reset){
+        double boatLat = decoder.getLatitude();
+        double boatLng = decoder.getLongitude();
+
+        GeoPoint homePosition = new GeoPoint(0.0, 0.0);
+        if (!reset) homePosition = new GeoPoint(boatLat, boatLng);
+
+        Bitmap bInput = BitmapFactory.decodeResource(getResources(), R.drawable.ic_home);
+        Matrix matrix = new Matrix();
+        Bitmap bOutput = Bitmap.createBitmap(bInput, 0, 0, bInput.getWidth(), bInput.getHeight(), matrix, true);
+        Drawable oIcon = new BitmapDrawable(getResources(), bOutput);
+
+        homeMarker.setPosition(homePosition);
+        homeMarker.setIcon(oIcon);
+        mapView.invalidate();
     }
 
     private void drawBoat() {
@@ -701,6 +797,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 callGoHome();
+            }
+        });
+        resetHomeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resetHome();
             }
         });
     }
