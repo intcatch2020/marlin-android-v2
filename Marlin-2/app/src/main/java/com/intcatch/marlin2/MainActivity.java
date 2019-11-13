@@ -191,12 +191,12 @@ public class MainActivity extends AppCompatActivity {
         enableSendButton(false);
 
         // Disable WIP buttons
-        goHomeButton.setClickable(false);
-        goHomeButton.setActivated(false);
-        goHomeButton.setAlpha(0.3f);
-        resetHomeButton.setClickable(false);
-        resetHomeButton.setActivated(false);
-        resetHomeButton.setAlpha(0.3f);
+        //goHomeButton.setClickable(false);
+        //goHomeButton.setActivated(false);
+        //goHomeButton.setAlpha(0.3f);
+        //resetHomeButton.setClickable(false);
+        //resetHomeButton.setActivated(false);
+        //resetHomeButton.setAlpha(0.3f);
 
         // Disable unnecessary buttons
         peristalticButton.setClickable(false);
@@ -444,16 +444,22 @@ public class MainActivity extends AppCompatActivity {
     private void resetMarkerLines() {
         mSocket.emit("stop_autonomy");
 
-        for (Marker m : markerArrayList) mapView.getOverlayManager().remove(m);
-        markerArrayList.clear();
+        if(polyLineArrayList.size() > 0) {
+            for (Polyline p : polyLineArrayList) mapView.getOverlayManager().remove(p);
+            polyLineArrayList.clear();
 
-        for (Polyline p : polyLineArrayList) mapView.getOverlayManager().remove(p);
-        polyLineArrayList.clear();
+            plusSpiralButton.setVisibility(View.GONE);
+            minusSpiralButton.setVisibility(View.GONE);
 
-        geoPointsArrayList.clear();
+            geoPointsArrayList.clear();
+        }
+        else {
+            for (Marker m : markerArrayList) mapView.getOverlayManager().remove(m);
+            markerArrayList.clear();
+            geoPointsArrayList.clear();
+        }
 
         mapView.invalidate();
-
         enableSendButton(false);
     }
 
@@ -561,7 +567,7 @@ public class MainActivity extends AppCompatActivity {
 
         // RESET go-home stuff
         moveHome(true);
-        goHomeButton.setImageResource(R.drawable.ic_home);
+        goHomeButton.setImageResource(R.drawable.ic_go_home_set);
         homeSetted = false;
     }
 
