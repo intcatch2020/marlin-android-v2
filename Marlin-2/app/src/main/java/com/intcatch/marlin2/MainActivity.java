@@ -101,7 +101,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<GeoPoint> geoPointsArrayList;
 
     // Socket variables
-    public static final String SERVER_URL = "http://192.168.2.1:5000";
+    //public static final String SERVER_URL = "http://192.168.2.1:5000";
+    public static final String SERVER_URL = "http://wais.intcatch.eu:4000";
     private Socket mSocket;
 
     // My private variables
